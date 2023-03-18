@@ -13,6 +13,7 @@ from config.quest import ConfigQuest
 from config.factory import ConfigFactory
 from config.scheduler import ConfigScheduler
 from config.ship_switcher import ConfigShipSwitcher
+from config.webhook import ConfigWebhook
 from util.json_data import JsonData
 from util.logger import Log
 
@@ -30,6 +31,7 @@ class Config(object):
     quest = None
     factory = None
     scheduler = None
+    webhook = None
 
     def __init__(self):
         Log.log_success("Initializing kcauto.")
@@ -72,6 +74,7 @@ class Config(object):
             new_quest = ConfigQuest(config_json)
             new_factory = ConfigFactory(config_json)
             new_scheduler = ConfigScheduler(config_json)
+            new_webhook = ConfigWebhook(config_json)
             update = True
         except Exception as e:
             Log.log_error(e)
@@ -96,6 +99,7 @@ class Config(object):
             self.factory = new_factory
             self.scheduler = new_scheduler
             self.last_cfg_update_time = new_update_time
+            self.webhook = new_webhook
             return True
 
     @property
