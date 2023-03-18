@@ -5,6 +5,8 @@ from random import randint
 import api.api_core as api
 import ships.ships_core as shp
 import stats.stats_core as sts
+import config.config_core as cfg
+import webhook.webhook_core as wbh
 import util.kca as kca_u
 from kca_enums.formations import FormationEnum
 from kca_enums.kcsapi_paths import KCSAPIEnum
@@ -52,6 +54,10 @@ class PvPCore(CoreBase):
 
         Log.log_msg(f"{len(self.available_pvp)} PvP opponents available.")
         pvp_index = self.available_pvp.pop(0)
+   
+        if cfg.config.webhook.enabled:
+            wbh.webhook.post(title='PvP Started', color=0x6cfc7c, text=f'{len(self.available_pvp)} PvP(s) have been available.\nWaiting for the PvP({pvp_index}) to end.')
+
         self._conduct_pvp(pvp_index)
 
         if len(self.available_pvp) == 0:

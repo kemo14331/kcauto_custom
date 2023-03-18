@@ -9,6 +9,7 @@ import ships.ships_core as shp
 from kca_enums.scheduler_slots import (
     SchedulerSlot0Enum, SchedulerSlot2Enum, SchedulerSlot3Enum)
 from scheduler.schedule_rule import ScheduleRule
+import webhook.webhook_core as wbh
 from util.kc_time import KCTime
 from util.logger import Log
 
@@ -75,21 +76,33 @@ class SchedulerCore(object):
             if datetime.now() > time:
                 if rule.action is SchedulerSlot2Enum.STOP:
                     if rule.condition_type is SchedulerSlot0Enum.TIME:
-                        Log.log_msg(
+                        message = str((
                             f"Stopping {rule.action_module.display_name} "
                             f" module at local time "
                             f"~{rule.condition_time[0]:02}:"
-                            f"{rule.condition_time[1]:02}.")
+                            f"{rule.condition_time[1]:02}."))
+                        Log.log_msg(message)
+                        if cfg.config.webhook.enabled:
+                            wbh.webhook.post(
+                                title=f'Stoping {rule.action_module.display_name}',
+                                color=0x7dc143c,
+                                text=message)
                     elif rule.condition_type is SchedulerSlot0Enum.TIME_RUN:
-                        Log.log_msg(
+                        message = str((
                             f"Stopping {rule.action_module.display_name} "
-                            f" module after running for "
+                            f" module at local time "
                             f"~{rule.condition_time[0]:02}:"
-                            f"{rule.condition_time[1]:02}.")
+                            f"{rule.condition_time[1]:02}."))
+                        Log.log_msg(message)
+                        if cfg.config.webhook.enabled:
+                            wbh.webhook.post(
+                                title=f'Stoping {rule.action_module.display_name}',
+                                color=0x7dc143c,
+                                text=message)
                 if rule.action is SchedulerSlot2Enum.SLEEP:
                     wake_time = rule.next_wake_time
                     if rule.condition_type is SchedulerSlot0Enum.TIME:
-                        Log.log_msg(
+                        message = str(
                             f"Sleeping {rule.action_module.display_name} "
                             f"module at local time "
                             f"~{rule.condition_time[0]:02}:"
@@ -97,15 +110,27 @@ class SchedulerCore(object):
                             f"~{rule.action_length[0]:02}:"
                             f"{rule.action_length[1]:02}. Waking at "
                             f"{KCTime.datetime_to_str(wake_time)}.")
+                        Log.log_msg(message)
+                        if cfg.config.webhook.enabled:
+                            wbh.webhook.post(
+                                title=f'Sleeping {rule.action_module.display_name}',
+                                color=0xd2691e,
+                                text=message)
                     elif rule.condition_type is SchedulerSlot0Enum.TIME_RUN:
-                        Log.log_msg(
+                        message = str(
                             f"Sleeping {rule.action_module.display_name} "
-                            f"module after running for "
+                            f"module at local time "
                             f"~{rule.condition_time[0]:02}:"
                             f"{rule.condition_time[1]:02} for "
                             f"~{rule.action_length[0]:02}:"
                             f"{rule.action_length[1]:02}. Waking at "
                             f"{KCTime.datetime_to_str(wake_time)}.")
+                        Log.log_msg(message)
+                        if cfg.config.webhook.enabled:
+                            wbh.webhook.post(
+                                title=f'Sleeping {rule.action_module.display_name}',
+                                color=0xd2691e,
+                                text=message)                    
                     self.wake_timers.append((wake_time, rule))
                 self._set_module_enabled_state(rule, False)
             else:
@@ -159,17 +184,18 @@ class SchedulerCore(object):
             rule = timer_tuple[1]
             if datetime.now() > time:
                 if rule.action is SchedulerSlot2Enum.SLEEP:
+                    message = str(
+                            f"Waking {rule.action_module.display_name} module "
+                            f"after sleeping for ~{rule.action_length[0]:02}:"
+                            f"{rule.action_length[1]:02}.")
                     if rule.condition_type is SchedulerSlot0Enum.TIME:
-                        Log.log_msg(
-                            f"Waking {rule.action_module.display_name} module "
-                            f"after sleeping for ~{rule.action_length[0]:02}:"
-                            f"{rule.action_length[1]:02}.")
+                        Log.log_msg(message)
+                        if cfg.config.webhook.enabled:
+                            wbh.webhook.post(title=f'Waking module', color=0x7fff00, text=message)
                     elif rule.condition_type is SchedulerSlot0Enum.TIME_RUN:
-                        Log.log_msg(
-                            f"Waking {rule.action_module.display_name} module "
-                            f"after sleeping for ~{rule.action_length[0]:02}:"
-                            f"{rule.action_length[1]:02}.")
-                    self.stop_timers.append((rule.next_action_time, rule))
+                        Log.log_msg(message)
+                        if cfg.config.webhook.enabled:
+                            wbh.webhook.post(title=f'Waking module', color=0x7fff00, text=message)
                 self._set_module_enabled_state(rule, True)
             else:
                 new_wake_timers.append(timer_tuple)
@@ -186,10 +212,14 @@ class SchedulerCore(object):
         elif module is SchedulerSlot3Enum.KCAUTO:
             if rule.action is SchedulerSlot2Enum.STOP:
                 Log.log_success("Stopping kcauto based on scheduler rule.")
+                if cfg.config.webhook.enabled:
+                    wbh.webhook.post(title='Stoping KCAuto', color=0x7dc143c, text=f'Stopping KCAuto based on scheduler rule.')
                 exit(0)
             elif rule.action is SchedulerSlot2Enum.SLEEP:
                 if state is True:
                     Log.log_success("Waking kcauto.")
+                    if cfg.config.webhook.enabled:
+                        wbh.webhook.post(title='Waking KCAuto', color=0x7fff00, text=f'KCAuto is waking.')
                 self.kca_active = state
 
 

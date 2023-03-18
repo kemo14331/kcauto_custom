@@ -9,6 +9,7 @@ import fleet.fleet_core as flt
 import resupply.resupply_core as res
 import stats.stats_core as sts
 import util.kca as kca_u
+import webhook.webhook_core as wbh
 from kca_enums.expeditions import ExpeditionEnum
 from kca_enums.kcsapi_paths import KCSAPIEnum
 from util.core_base import CoreBase
@@ -72,6 +73,9 @@ class ExpeditionCore(CoreBase):
                 kca_u.kca.r['top'].hover()
                 received_expeditions = True
                 kca_u.kca.sleep()
+            if cfg.config.webhook.enabled:
+                wbh.webhook.post(title='Expedetion Received', color=0x2eb0f2, text=f'Completed receiving expedition.')
+
         return received_expeditions
 
     def expect_returned_fleets(self):
@@ -143,6 +147,8 @@ class ExpeditionCore(CoreBase):
                 kca_u.kca.click_existing('lower', 'expedition|e_world_1.png')
                 kca_u.kca.r['top'].hover()
                 kca_u.kca.sleep()
+            if cfg.config.webhook.enabled:
+                wbh.webhook.post(title='Expedetion Sent', color=0x2eb0f2, text=f'Completed sending fleet {fleet.fleet_id} expedition.')
 
     def _validate_expeditions(self):
         if len(self.available_expeditions) == 0:

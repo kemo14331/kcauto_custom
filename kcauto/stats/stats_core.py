@@ -110,5 +110,93 @@ class Stats(object):
 
         self.print_loop_end_stats = False
 
+    @property
+    def fields(self):
+        fields = []
+        fields.append(
+            {
+                "name": "PvP Done",
+                "value": f'{self.pvp.pvp_done} ({self.pvp.pvp_done_ph:.2f}/hr)'
+            }
+        )
+        fields.append(
+            {
+                "name": "Expeditions Sent",
+                "value": f'{self.expedition.expeditions_sent} ({self.expedition.expeditions_sent_ph:.2f}/hr)'
+            }
+        )
+        fields.append(
+            {
+                "name": "Expeditions Received",
+                "value": f'{self.expedition.expeditions_received} ({self.expedition.expeditions_received_ph:.2f}/hr)'
+            }
+        )
+        
+        # if cfg.config.combat.enabled:
+        #     for fleet in flt.fleets.combat_fleets:
+        #         pass
+
+        # if cfg.config.expedition.enabled:
+        #     for fleet in flt.fleets.expedition_fleets:
+        #         pass
+
+        fields.append(
+            {
+                "name": "Quests Completed",
+                "value": f'{self.quest.quests_turned_in}({self.quest.quests_turned_in_ph:.2f}/hr)'
+            }
+        )
+
+        fields.append(
+            {
+                "name": "Fuel",
+                "value": f'{self.rsc.fuel} (Δ{self.rsc.fuel_delta} : {self.rsc.fuel_ph:.2f}/hr)',
+                "inline": True
+            }
+        )
+        fields.append(
+            {
+                "name": "Ammo",
+                "value": f'{self.rsc.ammo} (Δ{self.rsc.ammo_delta} : {self.rsc.ammo_ph:.2f}/hr)',
+                "inline": True
+            }
+        )
+        fields.append(
+            {
+                "name": "Steel",
+                "value": f'{self.rsc.steel} (Δ{self.rsc.steel_delta} : {self.rsc.steel_ph:.2f}/hr)',
+                "inline": True
+            }
+        )
+        fields.append(
+            {
+                "name": "Bauxite",
+                "value": f'{self.rsc.bauxite} (Δ{self.rsc.bauxite_delta} : {self.rsc.bauxite_ph:.2f}/hr)',
+                "inline": True
+            }
+        )
+        fields.append(
+            {
+                "name": "Bucket",
+                "value": f'{self.rsc.bucket} (Δ{self.rsc.bucket_delta} : {self.rsc.bucket_ph:.2f}/hr)',
+                "inline": True
+            }
+        )
+
+        fields.append(
+            {
+                "name": "Loops",
+                "value": self.loop_count,
+            }
+        )
+
+        fields.append(
+            {
+                "name": "Runtime",
+                "value": f'{KCTime.timedelta_to_str(datetime.now() - self.start_time)}',
+            }
+        )
+
+        return fields
 
 stats = Stats()

@@ -5,6 +5,7 @@ import fleet.fleet_core as flt
 import config.config_core as cfg
 import nav.nav as nav
 import stats.stats_core as sts
+import webhook.webhook_core as wbh
 import util.kca as kca_u
 from kca_enums.kcsapi_paths import KCSAPIEnum
 from util.logger import Log
@@ -100,12 +101,24 @@ class FactoryCore(object):
                 kca_u.kca.r['shipgirl'].click()
                 kca_u.kca.r['top'].hover()
                 kca_u.kca.sleep()
+                   
+        if cfg.config.webhook.enabled:
+            wbh.webhook.post(
+                title='Development completed',
+                color=0xffe4b5, text=f'The development of equipment has been completed {count} times.',
+                fields=[{
+                    "name": "Recipe",
+                    "value": f'{oil}/{ammo}/{steel}/{bauxite}'
+                }]
+                )
 
         return True
 
     def build(self, oil, ammo, steel, bauxite, count):
         """Place the build order"""
         """Assume currently at factory page when called"""
+
+        inital_count = count
 
         while count > 0:
 
@@ -169,6 +182,14 @@ class FactoryCore(object):
                     kca_u.kca.wait('lower', 'factory|factory_init.png', 20)
                     
                     count -= 1
+                    if cfg.config.webhook.enabled:
+                        wbh.webhook.post(
+                            title='Shipbuilding order completed',
+                            color=0xffe4b5, text=f'The shipbuilding order has been completed.({inital_count - count}/{inital_count})',
+                            fields=[{
+                                "name": "Recipe",
+                                "value": f'{oil}/{ammo}/{steel}/{bauxite}'
+                            }])
                     if count <= 0:
                         break
 

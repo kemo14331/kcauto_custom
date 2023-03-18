@@ -9,6 +9,7 @@ import fleet.fleet_core as flt
 import repair.repair_core as rep
 import ships.ships_core as shp
 import stats.stats_core as sts
+import webhook.webhook_core as wbh
 import util.kca as kca_u
 from combat.map_data import MapData
 from util.core_base import CoreBase
@@ -239,7 +240,7 @@ class CombatCore(CoreBase):
             self.set_next_sortie_time(time_to_rest)
             return False
         self._select_map(sortie_map)
-        if self._begin_sortie():
+        if self._begin_sortie(sortie_map):
             self.nodes_run = []
             self.combat_nodes_run = []
             self.rescued_ships = []
@@ -294,7 +295,7 @@ class CombatCore(CoreBase):
                 kca_u.kca.sleep(1)
         kca_u.kca.r['top'].hover()
 
-    def _begin_sortie(self):
+    def _begin_sortie(self, sortie_map):
         if kca_u.kca.click_existing('lower_right', 'global|sortie_select.png'):
             kca_u.kca.r['top'].hover()
             kca_u.sleep(2)
@@ -312,6 +313,15 @@ class CombatCore(CoreBase):
                     Log.log_msg(fleet)
                     Log.log_msg(fleet.detailed_fleet_status)
                 Log.log_msg("Starting sortie.")
+                if cfg.config.webhook.enabled:
+                    wbh.webhook.post(
+                        title=f'Sortie Started',
+                        color=0xd2691e,
+                        text=f'',
+                        fields=[{
+                            "name": 'Map',
+                            "value": f'{sortie_map.world_and_map}'
+                        }])
                 return True
             Log.log_warn("Cannot start combat.")
         return False
@@ -321,6 +331,11 @@ class CombatCore(CoreBase):
             if cfg.config.combat.clear_stop:
                 Log.log_debug("Map has been cleared!")
                 self.enabled = False
+                if cfg.config.webhook.enabled:
+                    wbh.webhook.post(
+                        title=f'Map Cleared',
+                        color=0xd2691e,
+                        text=f'Map has been cleared!')
 
     def _handle_combat(self, sortie_map):
         kca_u.kca.r['top'].hover()

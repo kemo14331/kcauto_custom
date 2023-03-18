@@ -12,6 +12,7 @@ import resupply.resupply_core as res
 import scheduler.scheduler_core as sch
 import ship_switcher.ship_switcher_core as ssw
 import stats.stats_core as sts
+import webhook.webhook_core as wbh
 import util.kca as kca_u
 from kca_enums.expeditions import ExpeditionEnum
 from util.logger import Log
@@ -52,6 +53,9 @@ class Kcauto(object):
     def initialization_check(self):
         if sts.stats.rsc.ammo is None:
             Log.log_msg("kcauto is initializing.")
+            if cfg.config.webhook.enabled:
+                wbh.webhook.post(title="Initializing KCAuto",
+                                 text="KCAuto is initializing.")
             if not exp.expedition.receive_expedition():
                 nav.navigate.to('refresh_home')
                 sts.stats.set_print_loop_end_stats()
@@ -317,6 +321,16 @@ class Kcauto(object):
         if sts.stats.print_loop_end_stats:
             sts.stats.loop_count += 1
             sts.stats.print_stats()
+            self.post_stats_webhook()
+
+    def post_stats_webhook(self):
+        if(cfg.config.webhook.enabled):
+            wbh.webhook.post(
+                title="KCAuto Stats",
+                text=f'KCAuto has completed a {sts.stats.loop_count}th loop!',
+                color=0x1c842c,
+                fields=sts.stats.fields
+            )
 
 
 kcauto = Kcauto()
